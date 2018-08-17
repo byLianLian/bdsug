@@ -1,0 +1,74 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <title>Title</title>
+ </head>
+ <body>
+ 	<div id="dv">
+ 		<h1>百度提示词</h1>
+ 		<input type="text" placeholder="请输入关键词" id="txt">
+ 		<input type="button" value="查询" id="btn">
+ 		<ul id="uu"></ul>
+ 	</div>
+ 	
+	<script>
+		function myAjaxCross(obj){
+			var defaults = {
+				url:"#", //地址
+				data:{}, //业务逻辑参数
+				success:function(data){}, //参数传递回来的处理函数
+				jsonp:"callback", //获取方法名的key值，是一个回调函数，由后端接口文档指定
+				jsonpCallback:"sug" // 获取方法名的value值，也就是方法名字
+			}
+			//由obj传入的对象覆盖defaults
+			for(var key in obj){
+				defaults[key] = obj[key];
+			}
+
+			var script = document.createElement('script');
+
+			var params = "";
+			for(var attr in defaults.data){
+				params += attr + "=" + defaults.data[attr] + "&";
+			}
+			if(params&&(params!=="")){
+				params = params.substring(0,params.length-1);
+			}
+
+			script.src = defaults.url + "?" +params + "&" + defaults.jsonp + "=" +defaults.jsonpCallback;
+			console.log(script.src);
+
+			window[defaults.jsonpCallback] = function(data){
+				defaults.success(data);
+			}
+			document.querySelector("head").appendChild(script);
+		}
+
+
+
+		document.getElementById('btn').onclick = function(){
+			myAjaxCross({
+				url:"http://suggestion.baidu.com/su",
+				data:{wd:document.getElementById('txt').value},
+				success:function(data){
+					console.log(data);
+					
+					var str = "";
+					if(data.s.length !== 0){
+						for(var i=0; i<data.s.length;i++){
+							str += "<li>"+data.s[i]+"</li>";
+						}
+						document.getElementById("uu").innerHTML = str;
+					}else{
+						str="<li>未找到关键词</li>";
+						document.getElementById("uu").innerHTML = str;
+					}
+				},
+				jsonp:"cb",
+				jsonpCallback:"sug"
+			})
+		}
+	</script>
+</body>
+</html>
